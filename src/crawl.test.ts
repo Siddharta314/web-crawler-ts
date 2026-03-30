@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { normalizeURL } from "./crawl";
+import {
+  normalizeURL,
+  getHeadingFromHTML,
+  getFirstParagraphFromHTML,
+} from "./crawl";
 
 describe("normalizeURL", () => {
   it("normalizes a URL by lowercasing the host and removing a trailing slash", () => {
@@ -21,5 +25,30 @@ describe("normalizeURL", () => {
     expect(normalizeURL("http://blog.boot.dev/path")).toBe(
       "blog.boot.dev/path",
     );
+  });
+});
+
+describe("getHeadingFromHTML", () => {
+  it("getHeadingFromHTML basic", () => {
+    const inputBody = `<html><body><h1>Test Title</h1></body></html>`;
+    const actual = getHeadingFromHTML(inputBody);
+    const expected = "Test Title";
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe("getFirstParagraphFromHTML", () => {
+  it("getFirstParagraphFromHTML main priority", () => {
+    const inputBody = `
+    <html><body>
+      <p>Outside paragraph.</p>
+      <main>
+        <p>Main paragraph.</p>
+      </main>
+    </body></html>
+  `;
+    const actual = getFirstParagraphFromHTML(inputBody);
+    const expected = "Main paragraph.";
+    expect(actual).toEqual(expected);
   });
 });
