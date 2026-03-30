@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import { JSDOM } from "jsdom";
 
 export function normalizeURL(url: string) {
@@ -7,17 +8,6 @@ export function normalizeURL(url: string) {
   return hostPath.endsWith("/") ? hostPath.slice(0, -1) : hostPath;
 }
 
-// export function getHeadingFromHTML(html: string): string {
-//   const firstHeading = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
-//   if (!firstHeading) {
-//     const secondHeading = html.match(/<h2[^>]*>(.*?)<\/h2>/i);
-//     if (!secondHeading) {
-//       return "";
-//     }
-//     return secondHeading[1];
-//   }
-//   return firstHeading[1];
-// }
 export function getHeadingFromHTML(html: string): string {
   const dom = new JSDOM(html);
   const document = dom.window.document;
@@ -34,3 +24,34 @@ export function getFirstParagraphFromHTML(html: string): string {
     main?.querySelector("p") || document.querySelector("p");
   return firstParagraph ? firstParagraph.textContent : "";
 }
+
+export function getURLsFromHTML(html: string, baseURL: string): string[] {
+  const dom = new JSDOM(html);
+  const document = dom.window.document;
+  const URLs = document.querySelectorAll("a[href]");
+  return Array.from(URLs)
+    .filter((url) => url.getAttribute("href"))
+    .map((url) => new URL(url.getAttribute("href")!, baseURL).toString());
+}
+
+export function getImagesFromHTML(html: string, baseURL: string): string[] {
+  const dom = new JSDOM(html);
+  const document = dom.window.document;
+  const images = document.querySelectorAll("img[src]");
+  return Array.from(images)
+    .filter((img) => img.getAttribute("src"))
+    .map((img) => new URL(img.getAttribute("src")!, baseURL).toString());
+}
+
+/*  using regex   */
+// export function getHeadingFromHTML(html: string): string {
+//   const firstHeading = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
+//   if (!firstHeading) {
+//     const secondHeading = html.match(/<h2[^>]*>(.*?)<\/h2>/i);
+//     if (!secondHeading) {
+//       return "";
+//     }
+//     return secondHeading[1];
+//   }
+//   return firstHeading[1];
+// }
