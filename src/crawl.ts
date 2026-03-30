@@ -1,5 +1,12 @@
-import { url } from "inspector";
 import { JSDOM } from "jsdom";
+
+type ExtractedPageData = {
+  url: string;
+  heading: string;
+  firstParagraph: string;
+  outgoingLinks: string[];
+  imageURLs: string[];
+};
 
 export function normalizeURL(url: string) {
   const myURL = new URL(url);
@@ -41,6 +48,19 @@ export function getImagesFromHTML(html: string, baseURL: string): string[] {
   return Array.from(images)
     .filter((img) => img.getAttribute("src"))
     .map((img) => new URL(img.getAttribute("src")!, baseURL).toString());
+}
+
+export function extractPageData(
+  html: string,
+  pageURL: string,
+): ExtractedPageData {
+  return {
+    url: pageURL,
+    heading: getHeadingFromHTML(html),
+    firstParagraph: getFirstParagraphFromHTML(html),
+    outgoingLinks: getURLsFromHTML(html, pageURL),
+    imageURLs: getImagesFromHTML(html, pageURL),
+  };
 }
 
 /*  using regex   */

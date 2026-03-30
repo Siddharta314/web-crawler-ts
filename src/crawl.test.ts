@@ -5,6 +5,7 @@ import {
   getFirstParagraphFromHTML,
   getURLsFromHTML,
   getImagesFromHTML,
+  extractPageData,
 } from "./crawl";
 
 describe("normalizeURL", () => {
@@ -141,6 +142,31 @@ describe("getImagesFromHTML", () => {
 
     const actual = getImagesFromHTML(inputBody, inputURL);
     const expected = ["https://crawler-test.com/valid-image.gif"];
+
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe("extractPageData", () => {
+  it("extractPageData basic", () => {
+    const inputURL = "https://crawler-test.com";
+    const inputBody = `
+    <html><body>
+      <h1>Test Title</h1>
+      <p>This is the first paragraph.</p>
+      <a href="/link1">Link 1</a>
+      <img src="/image1.jpg" alt="Image 1">
+    </body></html>
+  `;
+
+    const actual = extractPageData(inputBody, inputURL);
+    const expected = {
+      url: "https://crawler-test.com",
+      heading: "Test Title",
+      firstParagraph: "This is the first paragraph.",
+      outgoingLinks: ["https://crawler-test.com/link1"],
+      imageURLs: ["https://crawler-test.com/image1.jpg"],
+    };
 
     expect(actual).toEqual(expected);
   });
