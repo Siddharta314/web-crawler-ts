@@ -1,6 +1,14 @@
 import pLimit from "p-limit";
 import { getURLsFromHTML, normalizeURL } from "./crawl";
 
+// type ExtractedPageData = {
+//   url: string;
+//   heading: string;
+//   first_paragraph: string;
+//   outgoingLinks: string[];
+//   imageURLs: string[];
+// };
+
 type Pages = Record<string, number>;
 
 class ConcurrentCrawler {
@@ -9,11 +17,21 @@ class ConcurrentCrawler {
   constructor(
     private baseURL: string,
     maxConcurrency: number = 1,
+    private maxPages: number,
+    private shouldStop: boolean = false,
+    private allTasks: Set<Promise<void>> = new Set(),
   ) {
     this.pages = {};
     this.limit = pLimit(maxConcurrency);
   }
   private addPageVisit(normalizedURL: string): boolean {
+    if (this.shouldStop) {
+      return false;
+    }
+    if (Object.keys(this.pages).length >= this.maxPages) {
+      this.shouldStop = true;
+      return false;
+    }
     if (this.pages[normalizedURL]) {
       this.pages[normalizedURL]++;
       return false;
@@ -49,6 +67,9 @@ class ConcurrentCrawler {
   }
 
   private async crawlPage(currentURL: string): Promise<void> {
+    if (this.shouldStop) {
+      return;
+    }
     const currentURLObj = new URL(currentURL);
     const baseURLObj = new URL(this.baseURL);
     if (currentURLObj.hostname !== baseURLObj.hostname) {
@@ -70,7 +91,13 @@ class ConcurrentCrawler {
 
     try {
       const nextURLs = getURLsFromHTML(html, this.baseURL);
-      const crawlPromises = nextURLs.map((nextURL) => this.crawlPage(nextURL));
+      const crawlPromises = nextURLs.map((nextURL) => {
+        console.log(`Queueing crawl for ${nextURL}`);
+        const task = this.crawlPage(nextURL);
+        this.allTasks.add(task);
+        task.finally(() => this.allTasks.delete(task));
+        return task;
+      });
       await Promise.all(crawlPromises);
     } catch (error) {
       console.error(`Error crawling ${currentURL}:`, error);
@@ -87,7 +114,8 @@ class ConcurrentCrawler {
 export function crawlSiteAsync(
   baseURL: string,
   maxConcurrency: number = 5,
+  maxPages: number = 10,
 ): Promise<Pages> {
-  const crawler = new ConcurrentCrawler(baseURL, maxConcurrency);
+  const crawler = new ConcurrentCrawler(baseURL, maxConcurrency, maxPages);
   return crawler.crawl();
 }

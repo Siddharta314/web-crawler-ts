@@ -3,7 +3,7 @@ import { JSDOM } from "jsdom";
 type ExtractedPageData = {
   url: string;
   heading: string;
-  firstParagraph: string;
+  first_paragraph: string;
   outgoingLinks: string[];
   imageURLs: string[];
 };
@@ -59,7 +59,7 @@ export function extractPageData(
   return {
     url: pageURL,
     heading: getHeadingFromHTML(html),
-    firstParagraph: getFirstParagraphFromHTML(html),
+    first_paragraph: getFirstParagraphFromHTML(html),
     outgoingLinks: getURLsFromHTML(html, pageURL),
     imageURLs: getImagesFromHTML(html, pageURL),
   };

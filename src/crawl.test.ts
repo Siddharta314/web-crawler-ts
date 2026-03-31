@@ -163,7 +163,7 @@ describe("extractPageData", () => {
     const expected = {
       url: "https://crawler-test.com",
       heading: "Test Title",
-      firstParagraph: "This is the first paragraph.",
+      first_paragraph: "This is the first paragraph.",
       outgoingLinks: ["https://crawler-test.com/link1"],
       imageURLs: ["https://crawler-test.com/image1.jpg"],
     };
