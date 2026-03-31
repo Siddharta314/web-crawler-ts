@@ -63,6 +63,63 @@ export function extractPageData(
   };
 }
 
+async function getHTML(url: string) {
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "User-Agent": "BootCrawler/1.0",
+    },
+  });
+  if (response.status !== 200) {
+    console.log("Failed to fetched, status code: " + response.status);
+  }
+  if (response.headers.get("content-type") !== "text/html") {
+    console.log("Content type is not text/html");
+  }
+
+  return response.text();
+}
+
+export async function crawlPage(
+  baseURL: string,
+  currentURL: string = baseURL,
+  pages: Record<string, number> = {},
+): Promise<Record<string, number>> {
+  const normalizedCurrentURL = normalizeURL(currentURL);
+  const currentURLObj = new URL(currentURL);
+  const baseURLObj = new URL(baseURL);
+  if (currentURLObj.hostname !== baseURLObj.hostname) {
+    return pages;
+  }
+  if (pages[normalizedCurrentURL]) {
+    pages[normalizedCurrentURL]++;
+    return pages;
+  }
+  pages[normalizedCurrentURL] = 1;
+
+  let html = "";
+  try {
+    html = await getHTML(currentURL);
+  } catch (err) {
+    console.log(`${(err as Error).message}`);
+    return pages;
+  }
+  if (!html) return pages;
+
+  try {
+    const pageData = extractPageData(html, currentURL);
+
+    const outgoingLinks = pageData.outgoingLinks;
+    for (const link of outgoingLinks) {
+      pages = await crawlPage(baseURL, link, pages);
+    }
+  } catch (error) {
+    console.error(`Error crawling ${currentURL}:`, error);
+  }
+
+  return pages;
+}
+
 /*  using regex   */
 // export function getHeadingFromHTML(html: string): string {
 //   const firstHeading = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
