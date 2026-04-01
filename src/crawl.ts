@@ -4,8 +4,8 @@ type ExtractedPageData = {
   url: string;
   heading: string;
   first_paragraph: string;
-  outgoingLinks: string[];
-  imageURLs: string[];
+  outgoing_links: string[];
+  image_urls: string[];
 };
 
 //Record<string, number>
@@ -60,8 +60,8 @@ export function extractPageData(
     url: pageURL,
     heading: getHeadingFromHTML(html),
     first_paragraph: getFirstParagraphFromHTML(html),
-    outgoingLinks: getURLsFromHTML(html, pageURL),
-    imageURLs: getImagesFromHTML(html, pageURL),
+    outgoing_links: getURLsFromHTML(html, pageURL),
+    image_urls: getImagesFromHTML(html, pageURL),
   };
 }
 

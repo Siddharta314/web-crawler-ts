@@ -1,19 +1,20 @@
 import pLimit from "p-limit";
-import { getURLsFromHTML, normalizeURL } from "./crawl";
+import { getURLsFromHTML, normalizeURL, extractPageData } from "./crawl";
 
-// type ExtractedPageData = {
-//   url: string;
-//   heading: string;
-//   first_paragraph: string;
-//   outgoingLinks: string[];
-//   imageURLs: string[];
-// };
+type ExtractedPageData = {
+  url: string;
+  heading: string;
+  first_paragraph: string;
+  outgoing_links: string[];
+  image_urls: string[];
+};
 
-type Pages = Record<string, number>;
+type Pages = Record<string, ExtractedPageData>;
 
 class ConcurrentCrawler {
+  private pages: Pages = {};
+  private visited: Set<string> = new Set();
   private limit;
-  private pages: Pages;
   constructor(
     private baseURL: string,
     maxConcurrency: number = 1,
@@ -21,22 +22,20 @@ class ConcurrentCrawler {
     private shouldStop: boolean = false,
     private allTasks: Set<Promise<void>> = new Set(),
   ) {
-    this.pages = {};
     this.limit = pLimit(maxConcurrency);
   }
   private addPageVisit(normalizedURL: string): boolean {
     if (this.shouldStop) {
       return false;
     }
-    if (Object.keys(this.pages).length >= this.maxPages) {
+    if (this.visited.size >= this.maxPages) {
       this.shouldStop = true;
       return false;
     }
-    if (this.pages[normalizedURL]) {
-      this.pages[normalizedURL]++;
+    if (this.visited.has(normalizedURL)) {
       return false;
     }
-    this.pages[normalizedURL] = 1;
+    this.visited.add(normalizedURL);
     return true;
   }
 
@@ -83,6 +82,8 @@ class ConcurrentCrawler {
     let html = "";
     try {
       html = await this.getHTML(currentURL);
+      const data = extractPageData(html, currentURL);
+      this.pages[normalizedCurrentURL] = data;
     } catch (err) {
       console.log(`${(err as Error).message}`);
       return;
@@ -90,14 +91,16 @@ class ConcurrentCrawler {
     if (!html) return;
 
     try {
-      const nextURLs = getURLsFromHTML(html, this.baseURL);
-      const crawlPromises = nextURLs.map((nextURL) => {
-        console.log(`Queueing crawl for ${nextURL}`);
-        const task = this.crawlPage(nextURL);
-        this.allTasks.add(task);
-        task.finally(() => this.allTasks.delete(task));
-        return task;
-      });
+      // const nextURLs = getURLsFromHTML(html, this.baseURL);
+      const crawlPromises = this.pages[normalizedCurrentURL].outgoing_links.map(
+        (nextURL) => {
+          console.log(`Queueing crawl for ${nextURL}`);
+          const task = this.crawlPage(nextURL);
+          this.allTasks.add(task);
+          task.finally(() => this.allTasks.delete(task));
+          return task;
+        },
+      );
       await Promise.all(crawlPromises);
     } catch (error) {
       console.error(`Error crawling ${currentURL}:`, error);

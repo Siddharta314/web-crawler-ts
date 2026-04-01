@@ -10,9 +10,16 @@ async function main() {
   const maxPages = parseInt(process.argv[4]);
   console.log("Starting craweler for " + baseURL);
   try {
-    const pageData = await crawlSiteAsync(baseURL, maxConcurrency, maxPages);
-    console.log(pageData);
-    console.log(`Crawled ${Object.keys(pageData).length} pages.`);
+    const pages = await crawlSiteAsync(baseURL, maxConcurrency, maxPages);
+    // console.log(pageData);
+    console.log(`Crawled ${Object.keys(pages).length} pages.`);
+    console.log("Finished crawling.");
+    const firstPage = Object.values(pages)[0];
+    if (firstPage) {
+      console.log(
+        `First page record: ${firstPage["url"]} - ${firstPage["heading"]}`,
+      );
+    }
   } catch (error) {
     console.error(error);
     process.exit(1);

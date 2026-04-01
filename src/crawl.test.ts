@@ -164,8 +164,8 @@ describe("extractPageData", () => {
       url: "https://crawler-test.com",
       heading: "Test Title",
       first_paragraph: "This is the first paragraph.",
-      outgoingLinks: ["https://crawler-test.com/link1"],
-      imageURLs: ["https://crawler-test.com/image1.jpg"],
+      outgoing_links: ["https://crawler-test.com/link1"],
+      image_urls: ["https://crawler-test.com/image1.jpg"],
     };
 
     expect(actual).toEqual(expected);
