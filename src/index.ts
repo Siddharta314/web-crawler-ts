@@ -15,13 +15,9 @@ async function main() {
     // console.log(pageData);
     console.log(`Crawled ${Object.keys(pages).length} pages.`);
     console.log("Finished crawling.");
-    const firstPage = Object.values(pages)[0];
-    if (firstPage) {
-      console.log(
-        `First page record: ${firstPage["url"]} - ${firstPage["heading"]}`,
-      );
-    }
+    console.log("Writing report...");
     writeJSONReport(pages);
+    console.log("Done! See you next time!");
   } catch (error) {
     console.error(error);
     process.exit(1);
