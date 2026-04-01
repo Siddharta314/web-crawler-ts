@@ -1,15 +1,6 @@
 import pLimit from "p-limit";
-import { getURLsFromHTML, normalizeURL, extractPageData } from "./crawl";
-
-type ExtractedPageData = {
-  url: string;
-  heading: string;
-  first_paragraph: string;
-  outgoing_links: string[];
-  image_urls: string[];
-};
-
-type Pages = Record<string, ExtractedPageData>;
+import { normalizeURL, extractPageData } from "./crawl";
+import { type ExtractedPageData, type Pages } from "./types";
 
 class ConcurrentCrawler {
   private pages: Pages = {};

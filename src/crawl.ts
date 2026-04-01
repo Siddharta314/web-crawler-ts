@@ -1,14 +1,5 @@
 import { JSDOM } from "jsdom";
-
-type ExtractedPageData = {
-  url: string;
-  heading: string;
-  first_paragraph: string;
-  outgoing_links: string[];
-  image_urls: string[];
-};
-
-//Record<string, number>
+import { type ExtractedPageData } from "./types";
 
 export function normalizeURL(url: string) {
   const myURL = new URL(url);

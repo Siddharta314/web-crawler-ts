@@ -1,4 +1,5 @@
 import { crawlSiteAsync } from "./concurrentCrawler";
+import { writeJSONReport } from "./report";
 
 async function main() {
   if (process.argv.length !== 5) {
@@ -20,6 +21,7 @@ async function main() {
         `First page record: ${firstPage["url"]} - ${firstPage["heading"]}`,
       );
     }
+    writeJSONReport(pages);
   } catch (error) {
     console.error(error);
     process.exit(1);
